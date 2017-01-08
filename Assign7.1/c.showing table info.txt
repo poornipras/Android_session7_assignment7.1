@@ -1,0 +1,5 @@
+c. How to show SQLite database table information in Android application what is the best way to do it?
+
+We can display the contents of the database by retrieving the column details and showing in a list view,grid view,custom list view,custom grid view using suitable adapters like arrayadapter etc
+Curor is used to traverse the items obtained from the database.
+we can also use table layout with cursor to display the database table information.

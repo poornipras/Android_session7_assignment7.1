@@ -1,0 +1,114 @@
+a.What is the use of SQLiteOpenHelper class in SQLite?
+
+SQLiteOpenHelper class:
+
+In order to manage all the operations related to the database , a helper class called SQLiteOpenHelper is used. It automatically manages the creation and update of the database. It is a helper class to manage database creation and version management.
+
+syntax:
+
+public class DBHelper extends SQLiteOpenHelper
+ {
+   public DBHelper()
+   {
+      super(context,DATABASE_NAME,null,1);
+   }
+   public void onCreate(SQLiteDatabase db) {}
+   public void onUpgrade(SQLiteDatabase database, int oldVersion, int newVersion) {}
+}
+
+we have to create a subclass implementing onCreate(SQLiteDatabase), onUpgrade(SQLiteDatabase, int, int) and optionally onOpen(SQLiteDatabase), and this class takes care of opening the database if it exists, creating it if it does not, and upgrading it as necessary. Transactions are used to make sure the database is always in a sensible state.
+
+This class makes it easy for ContentProvider implementations to defer opening and upgrading the database until first use, to avoid blocking application startup with long-running database upgrades.
+
+
+Constructors:
+
+1.SQLiteOpenHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version)
+Create a helper object to create, open, and/or manage a database.The database is not actually created or opened until one of getWritableDatabase() or getReadableDatabase() is called.
+
+Parameters:
+context	Context: to use to open or create the database
+name	String: of the database file, or null for an in-memory database
+factory	SQLiteDatabase.CursorFactory: to use for creating cursor objects, or null for the default
+version	int: number of the database (starting at 1); if the database is older, onUpgrade(SQLiteDatabase, int, int) will be used to upgrade the database; if the database is newer, onDowngrade(SQLiteDatabase, int, int) will be used to downgrade the database
+SQLiteOpenHelper
+
+
+2.SQLiteOpenHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version, DatabaseErrorHandler errorHandler)
+Create a helper object to create, open, and/or manage a database.The database is not actually created or opened until one of getWritableDatabase() or getReadableDatabase() is called.
+
+Parameters:
+
+context	Context: to use to open or create the database
+name	String: of the database file, or null for an in-memory database
+factory	SQLiteDatabase.CursorFactory: to use for creating cursor objects, or null for the default
+version	int: number of the database (starting at 1); if the database is older, onUpgrade(SQLiteDatabase, int, int) will be used to upgrade the database; if the database is newer, onDowngrade(SQLiteDatabase, int, int) will be used to downgrade the database
+errorHandler	DatabaseErrorHandler: the DatabaseErrorHandler to be used when sqlite reports database corruption, or null to use the default error handler.
+
+Public methods:
+1.close
+void close ()
+Close any open database object
+
+2.getDatabaseName
+
+String getDatabaseName ()
+Return the name of the SQLite database being opened, as given to the constructor
+
+3.getReadableDatabase
+
+SQLiteDatabase getReadableDatabase ()
+Create and/or open a database. This will be the same object returned by getWritableDatabase() unless some problem, such as a full disk, requires the database to be opened read-only. In that case, a read-only database object will be returned. If the problem is fixed, a future call to getWritableDatabase() may succeed, in which case the read-only database object will be closed and the read/write object will be returned in the future.
+
+4.getWritableDatabase
+
+SQLiteDatabase getWritableDatabase ()
+Create and/or open a database that will be used for reading and writing. The first time this is called, the database will be opened and onCreate(SQLiteDatabase), onUpgrade(SQLiteDatabase, int, int) and/or onOpen(SQLiteDatabase) will be called.
+
+Once opened successfully, the database is cached, so you can call this method every time you need to write to the database. (Make sure to call close() when you no longer need the database.) Errors such as bad permissions or a full disk may cause this method to fail, but future attempts may succeed if the problem is fixed
+
+5.onConfigure
+
+void onConfigure (SQLiteDatabase db)
+Called when the database connection is being configured, to enable features such as write-ahead logging or foreign key support.
+
+This method is called before onCreate(SQLiteDatabase), onUpgrade(SQLiteDatabase, int, int), onDowngrade(SQLiteDatabase, int, int), or onOpen(SQLiteDatabase) are called. It should not modify the database except to configure the database connection as required.
+
+This method should only call methods that configure the parameters of the database connection, such as enableWriteAheadLogging() setForeignKeyConstraintsEnabled(boolean), setLocale(Locale), setMaximumSize(long), or executing PRAGMA statements.
+
+6.onCreate
+
+void onCreate (SQLiteDatabase db)
+Called when the database is created for the first time. This is where the creation of tables and the initial population of the tables should happen.
+
+7.onDowngrade
+
+void onDowngrade (SQLiteDatabase db, 
+                int oldVersion, 
+                int newVersion)
+Called when the database needs to be downgraded. This is strictly similar to onUpgrade(SQLiteDatabase, int, int) method, but is called whenever current version is newer than requested one. However, this method is not abstract, so it is not mandatory for a customer to implement it. If not overridden, default implementation will reject downgrade and throws SQLiteException
+
+This method executes within a transaction. If an exception is thrown, all changes will automatically be rolled back
+
+8.onOpen
+
+void onOpen (SQLiteDatabase db)
+Called when the database has been opened. The implementation should check isReadOnly() before updating the database.
+
+This method is called after the database connection has been configured and after the database schema has been created, upgraded or downgraded as necessary. If the database connection must be configured in some way before the schema is created, upgraded, or downgraded, do it in onConfigure(SQLiteDatabase) instead.
+
+9.onUpgrade
+
+void onUpgrade (SQLiteDatabase db, 
+                int oldVersion, 
+                int newVersion)
+Called when the database needs to be upgraded. The implementation should use this method to drop tables, add tables, or do anything else it needs to upgrade to the new schema version.
+
+The SQLite ALTER TABLE documentation can be found here. If you add new columns you can use ALTER TABLE to insert them into a live table. If you rename or remove columns you can use ALTER TABLE to rename the old table, then create the new table and then populate the new table with the contents of the old table.
+
+This method executes within a transaction. If an exception is thrown, all changes will automatically be rolled back.
+
+10.setWriteAheadLoggingEnabled
+
+void setWriteAheadLoggingEnabled (boolean enabled)
+Enables or disables the use of write-ahead logging for the database. Write-ahead logging cannot be used with read-only databases so the value of this flag is ignored if the database is opened read-only.
